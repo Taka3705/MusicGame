@@ -54,17 +54,12 @@ public class MasterSystem : MonoBehaviour {
 		foreach (GameObject target in GameObject.FindGameObjectsWithTag("Target")) {
 			noteTarget_D.Add (target.name, target.transform);
 		}
-//		noteArray = GameObject.FindObjectsOfType<NoteData> ();
 		mainAudio = this.GetComponent<AudioSource> ();
-
-//		Debug.LogFormat ("bps:{0} FrameLate:{1}", 60f/bpm, Application.targetFrameRate);
 	}
 
 	void Update () {
 		NoteMover.NoteMove(noteAdd, noteTarget_D, waitTime, gameSpeed, noteHeight, mainAudio.time);
 		FingerActionSelector.TapTrigger (noteAdd, flickJudgeDistance, mainAudio.time);
-
-//		Debug.LogFormat ("{0}",1f/Time.deltaTime);
 	}
 }
 
@@ -124,6 +119,7 @@ public class FingerActionSelector{
 
 			string actionType = "";
 
+			Debug.Log (t.phase);
 
 			switch (t.phase) {
 			case TouchPhase.Began:
@@ -139,9 +135,14 @@ public class FingerActionSelector{
 
 				break;
 			
-//			case TouchPha
+			case TouchPhase.Stationary:
+				fad_A [id].holdTime = t.deltaTime;
+				actionType = "hold";
+				break;
 
 			case TouchPhase.Moved:
+				fad_A [id].holdTime = t.deltaTime;
+
 				float xx = t.position.x - fad_A [id].tapPos.x;
 				if (flickJudgeDistance < xx) {
 //					右向きにフリック
@@ -153,12 +154,12 @@ public class FingerActionSelector{
 //					Debug.Log ("左フリック");
 					actionType = "left";
 				} else {
-					actionType = "";
+					actionType = "hold";
 				}
 				break;
 
 			case TouchPhase.Ended:
-				fad_A [id].wasJudge = false;
+				fad_A [id] = new FingerActionData();
 				actionType = "";
 				break;
 			}
@@ -248,7 +249,7 @@ public class NoteAdd:MonoBehaviour{
 			height++; // 行数加算
 		}
 
-		for (int i = 0; i < 25; i++) {
+		for (int i = 0; i < 40; i++) {
 			if (noteData_D.Count <= 0) {
 				continue;
 			} else {
@@ -267,7 +268,6 @@ public class NoteAdd:MonoBehaviour{
 		if (noteData_D.Count > 0) {
 			NoteData noteData = noteData_D [0];
 			noteData_D.RemoveAt (0);
-			Debug.Log(noteData.time);
 			return noteData;
 		} else {
 //			Destroy (note.gameObject);
@@ -284,4 +284,6 @@ public class FingerActionData{
 	public bool wasJudge = false;
 
 	public string judgePos = "";
+
+	public float holdTime = 0;
 }
